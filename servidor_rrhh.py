@@ -32,5 +32,34 @@ def buscar_candidatos(puesto: str = "", fase: str = "") -> list[dict]:
         resultado.append(candidato)
     return resultado
 
+@servidor.tool
+def cambiar_fase(nombre: str, nueva_fase: str, confirmar: bool = False) -> dict:
+    """Cambia la fase del proceso de selección de un candidato.
+    IMPORTANTE: esta operación modifica datos. Llama primero sin confirmar
+    para ver qué cambiaría, muestra el resultado al usuario, y solo vuelve
+    a llamar con confirmar=True si el usuario lo aprueba explícitamente."""
+    encontrados = [c for c in CANDIDATOS if nombre.lower() in c["nombre"].lower()]
+
+    if len(encontrados) == 0:
+        return {"estado": "error", "mensaje": f"No encuentro a nadie llamado '{nombre}'."}
+    if len(encontrados) > 1:
+        nombres = [c["nombre"] for c in encontrados]
+        return {"estado": "error", "mensaje": f"'{nombre}' coincide con varias personas: {nombres}. Concreta más."}
+
+    candidato = encontrados[0]
+
+    if not confirmar:
+        return {
+            "estado": "pendiente_de_confirmacion",
+            "mensaje": f"Esto cambiaría a {candidato['nombre']} de '{candidato['fase']}' a '{nueva_fase}'. No se ha modificado nada todavía. Pide aprobación al usuario y vuelve a llamar con confirmar=True.",
+        }
+
+    fase_anterior = candidato["fase"]
+    candidato["fase"] = nueva_fase
+    return {
+        "estado": "hecho",
+        "mensaje": f"{candidato['nombre']}: '{fase_anterior}' → '{nueva_fase}'.",
+    }
+
 if __name__ == "__main__":
     servidor.run()
