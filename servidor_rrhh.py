@@ -1,14 +1,33 @@
+from faker import Faker
 from fastmcp import FastMCP
 
 servidor = FastMCP("rrhh")
 
-CANDIDATOS = [
-    {"nombre": "Ana Ruiz", "puesto": "Data Engineer", "fase": "Entrevista técnica"},
-    {"nombre": "Luis Marín", "puesto": "Data Engineer", "fase": "Criba curricular"},
-    {"nombre": "Sara Gil", "puesto": "Consultor MDM", "fase": "Oferta enviada"},
-    {"nombre": "Marc Soler", "puesto": "Consultor MDM", "fase": "Entrevista RRHH"},
-    {"nombre": "Nadia Haddad", "puesto": "Project Manager", "fase": "Descartado"},
-]
+PUESTOS = ["Data Engineer", "Consultor MDM", "Project Manager", "Analista de datos", "Arquitecto cloud"]
+FASES = ["Criba curricular", "Entrevista RRHH", "Entrevista técnica", "Oferta enviada", "Contratado", "Descartado"]
+
+
+def generar_candidatos(cantidad: int = 50, semilla: int = 42) -> list[dict]:
+    """Crea candidatos falsos en español. Con la misma semilla salen
+    siempre los mismos, así los datos no cambian entre arranques."""
+    fake = Faker("es_ES")
+    fake.seed_instance(semilla)
+    candidatos = []
+    nombres_usados = set()
+    while len(candidatos) < cantidad:
+        nombre = f"{fake.first_name()} {fake.last_name()}"
+        if nombre in nombres_usados:
+            continue
+        nombres_usados.add(nombre)
+        candidatos.append({
+            "nombre": nombre,
+            "puesto": fake.random_element(PUESTOS),
+            "fase": fake.random_element(FASES),
+        })
+    return candidatos
+
+
+CANDIDATOS = generar_candidatos()
 
 
 @servidor.tool
