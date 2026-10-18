@@ -1,33 +1,23 @@
-from faker import Faker
+import json
+from pathlib import Path
+
 from fastmcp import FastMCP
 
 servidor = FastMCP("rrhh")
 
-PUESTOS = ["Data Engineer", "Consultor MDM", "Project Manager", "Analista de datos", "Arquitecto cloud"]
-FASES = ["Criba curricular", "Entrevista RRHH", "Entrevista técnica", "Oferta enviada", "Contratado", "Descartado"]
+# Los candidatos viven en este archivo. Se crea con generar_candidatos.py.
+ARCHIVO = Path(__file__).parent / "candidatos.json"
 
 
-def generar_candidatos(cantidad: int = 50, semilla: int = 42) -> list[dict]:
-    """Crea candidatos falsos en español. Con la misma semilla salen
-    siempre los mismos, así los datos no cambian entre arranques."""
-    fake = Faker("es_ES")
-    fake.seed_instance(semilla)
-    candidatos = []
-    nombres_usados = set()
-    while len(candidatos) < cantidad:
-        nombre = f"{fake.first_name()} {fake.last_name()}"
-        if nombre in nombres_usados:
-            continue
-        nombres_usados.add(nombre)
-        candidatos.append({
-            "nombre": nombre,
-            "puesto": fake.random_element(PUESTOS),
-            "fase": fake.random_element(FASES),
-        })
-    return candidatos
+def leer_candidatos() -> list[dict]:
+    return json.loads(ARCHIVO.read_text(encoding="utf-8"))
 
 
-CANDIDATOS = generar_candidatos()
+def guardar_candidatos(candidatos: list[dict]) -> None:
+    ARCHIVO.write_text(json.dumps(candidatos, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+CANDIDATOS = leer_candidatos()
 
 
 @servidor.tool
@@ -75,6 +65,7 @@ def cambiar_fase(nombre: str, nueva_fase: str, confirmar: bool = False) -> dict:
 
     fase_anterior = candidato["fase"]
     candidato["fase"] = nueva_fase
+    guardar_candidatos(CANDIDATOS)
     return {
         "estado": "hecho",
         "mensaje": f"{candidato['nombre']}: '{fase_anterior}' → '{nueva_fase}'.",

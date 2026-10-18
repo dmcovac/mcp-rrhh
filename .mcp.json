@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "rrhh": {
+      "type": "stdio",
+      "command": ".venv/bin/python",
+      "args": [
+        "servidor_rrhh.py"
+      ],
+      "env": {}
+    }
+  }
+}

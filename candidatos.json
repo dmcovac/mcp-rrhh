@@ -1,0 +1,252 @@
+[
+  {
+    "nombre": "Feliciana Cantón",
+    "puesto": "Data Engineer",
+    "fase": "Descartado"
+  },
+  {
+    "nombre": "Leonardo Hierro",
+    "puesto": "Consultor MDM",
+    "fase": "Entrevista RRHH"
+  },
+  {
+    "nombre": "Maite Calatayud",
+    "puesto": "Arquitecto cloud",
+    "fase": "Criba curricular"
+  },
+  {
+    "nombre": "Dominga Roca",
+    "puesto": "Data Engineer",
+    "fase": "Criba curricular"
+  },
+  {
+    "nombre": "Ciro Gil",
+    "puesto": "Consultor MDM",
+    "fase": "Contratado"
+  },
+  {
+    "nombre": "Eligia Amor",
+    "puesto": "Arquitecto cloud",
+    "fase": "Entrevista RRHH"
+  },
+  {
+    "nombre": "Lilia Rivas",
+    "puesto": "Consultor MDM",
+    "fase": "Oferta enviada"
+  },
+  {
+    "nombre": "Dolores Lobo",
+    "puesto": "Data Engineer",
+    "fase": "Entrevista RRHH"
+  },
+  {
+    "nombre": "José Rocamora",
+    "puesto": "Project Manager",
+    "fase": "Entrevista técnica"
+  },
+  {
+    "nombre": "Fabricio Garrido",
+    "puesto": "Project Manager",
+    "fase": "Criba curricular"
+  },
+  {
+    "nombre": "Cirino Pinto",
+    "puesto": "Data Engineer",
+    "fase": "Entrevista técnica"
+  },
+  {
+    "nombre": "Rebeca Núñez",
+    "puesto": "Arquitecto cloud",
+    "fase": "Entrevista técnica"
+  },
+  {
+    "nombre": "Noemí Aroca",
+    "puesto": "Analista de datos",
+    "fase": "Contratado"
+  },
+  {
+    "nombre": "Edelmiro Pinedo",
+    "puesto": "Data Engineer",
+    "fase": "Contratado"
+  },
+  {
+    "nombre": "Lázaro Pardo",
+    "puesto": "Arquitecto cloud",
+    "fase": "Entrevista RRHH"
+  },
+  {
+    "nombre": "Julie Baños",
+    "puesto": "Data Engineer",
+    "fase": "Descartado"
+  },
+  {
+    "nombre": "Javier Mancebo",
+    "puesto": "Data Engineer",
+    "fase": "Entrevista RRHH"
+  },
+  {
+    "nombre": "Roxana Cabrero",
+    "puesto": "Analista de datos",
+    "fase": "Entrevista técnica"
+  },
+  {
+    "nombre": "Wilfredo Patiño",
+    "puesto": "Consultor MDM",
+    "fase": "Entrevista técnica"
+  },
+  {
+    "nombre": "Pedro Gallego",
+    "puesto": "Project Manager",
+    "fase": "Descartado"
+  },
+  {
+    "nombre": "Isabela Bellido",
+    "puesto": "Arquitecto cloud",
+    "fase": "Descartado"
+  },
+  {
+    "nombre": "Francisco Javier Hierro",
+    "puesto": "Consultor MDM",
+    "fase": "Oferta enviada"
+  },
+  {
+    "nombre": "Reynaldo Lerma",
+    "puesto": "Arquitecto cloud",
+    "fase": "Entrevista RRHH"
+  },
+  {
+    "nombre": "Isidora Morata",
+    "puesto": "Data Engineer",
+    "fase": "Entrevista RRHH"
+  },
+  {
+    "nombre": "Paca Antón",
+    "puesto": "Project Manager",
+    "fase": "Oferta enviada"
+  },
+  {
+    "nombre": "Julio Batalla",
+    "puesto": "Consultor MDM",
+    "fase": "Contratado"
+  },
+  {
+    "nombre": "Sarita Miranda",
+    "puesto": "Consultor MDM",
+    "fase": "Descartado"
+  },
+  {
+    "nombre": "Angelina Priego",
+    "puesto": "Analista de datos",
+    "fase": "Entrevista RRHH"
+  },
+  {
+    "nombre": "Juan Manuel Chaparro",
+    "puesto": "Consultor MDM",
+    "fase": "Descartado"
+  },
+  {
+    "nombre": "Chelo Jódar",
+    "puesto": "Arquitecto cloud",
+    "fase": "Oferta enviada"
+  },
+  {
+    "nombre": "Tomasa Pujol",
+    "puesto": "Project Manager",
+    "fase": "Entrevista RRHH"
+  },
+  {
+    "nombre": "Emiliano Vergara",
+    "puesto": "Analista de datos",
+    "fase": "Criba curricular"
+  },
+  {
+    "nombre": "Marisol Arévalo",
+    "puesto": "Data Engineer",
+    "fase": "Entrevista RRHH"
+  },
+  {
+    "nombre": "Eulalia Cuesta",
+    "puesto": "Analista de datos",
+    "fase": "Contratado"
+  },
+  {
+    "nombre": "Bernardo Plaza",
+    "puesto": "Analista de datos",
+    "fase": "Contratado"
+  },
+  {
+    "nombre": "Adelina Ángel",
+    "puesto": "Project Manager",
+    "fase": "Contratado"
+  },
+  {
+    "nombre": "Rosalinda Alberdi",
+    "puesto": "Data Engineer",
+    "fase": "Descartado"
+  },
+  {
+    "nombre": "Sonia Lasa",
+    "puesto": "Project Manager",
+    "fase": "Criba curricular"
+  },
+  {
+    "nombre": "Lázaro Royo",
+    "puesto": "Consultor MDM",
+    "fase": "Oferta enviada"
+  },
+  {
+    "nombre": "Abraham Lago",
+    "puesto": "Arquitecto cloud",
+    "fase": "Entrevista RRHH"
+  },
+  {
+    "nombre": "Anunciación Camino",
+    "puesto": "Project Manager",
+    "fase": "Descartado"
+  },
+  {
+    "nombre": "Anunciación Flor",
+    "puesto": "Consultor MDM",
+    "fase": "Entrevista técnica"
+  },
+  {
+    "nombre": "María Belén Cuéllar",
+    "puesto": "Arquitecto cloud",
+    "fase": "Contratado"
+  },
+  {
+    "nombre": "Zaida Abascal",
+    "puesto": "Arquitecto cloud",
+    "fase": "Entrevista técnica"
+  },
+  {
+    "nombre": "Amaya Aliaga",
+    "puesto": "Data Engineer",
+    "fase": "Entrevista técnica"
+  },
+  {
+    "nombre": "Selena Meléndez",
+    "puesto": "Consultor MDM",
+    "fase": "Criba curricular"
+  },
+  {
+    "nombre": "Jose Angel Bermúdez",
+    "puesto": "Data Engineer",
+    "fase": "Descartado"
+  },
+  {
+    "nombre": "Amalia Bayón",
+    "puesto": "Arquitecto cloud",
+    "fase": "Entrevista RRHH"
+  },
+  {
+    "nombre": "Eduardo Talavera",
+    "puesto": "Arquitecto cloud",
+    "fase": "Entrevista RRHH"
+  },
+  {
+    "nombre": "Juan Manuel Álamo",
+    "puesto": "Arquitecto cloud",
+    "fase": "Oferta enviada"
+  }
+]
