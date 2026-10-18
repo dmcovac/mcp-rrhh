@@ -1,4 +1,8 @@
+import csv
+import functools
+import json
 import time
+from datetime import datetime
 from pathlib import Path
 
 import httpx
@@ -21,6 +25,11 @@ FASES = {
     "Contratado": "Hired",
     "Rechazado": "Rejected",
 }
+
+# Registro de cada llamada: qué se pidió, cuándo y qué se devolvió.
+# Contiene nombres de candidatos, así que vive fuera de la carpeta del proyecto
+# (y por tanto fuera de git), junto a los demás datos.
+REGISTRO = Path.home() / "developer" / "mcp-rrhh-datos" / "registro_mcp.csv"
 
 _token = {"valor": None, "caduca": 0.0}
 
@@ -53,13 +62,40 @@ def minimizar(candidatura: dict) -> dict:
     }
 
 
+def registrar(herramienta):
+    @functools.wraps(herramienta)
+    def con_registro(*args, **kwargs):
+        try:
+            resultado = herramienta(*args, **kwargs)
+        except Exception as error:
+            resultado = {"estado": "error", "mensaje": f"Fallo interno: {error}"}
+            raise
+        finally:
+            nuevo = not REGISTRO.exists()
+            REGISTRO.parent.mkdir(parents=True, exist_ok=True)
+            with open(REGISTRO, "a", newline="", encoding="utf-8-sig" if nuevo else "utf-8") as f:
+                escritor = csv.writer(f)
+                if nuevo:
+                    escritor.writerow(["fecha", "herramienta", "se_pidio", "se_devolvio"])
+                escritor.writerow([
+                    datetime.now().isoformat(timespec="seconds"),
+                    herramienta.__name__,
+                    json.dumps(kwargs, ensure_ascii=False),
+                    json.dumps(resultado, ensure_ascii=False),
+                ])
+        return resultado
+    return con_registro
+
+
 @servidor.tool
+@registrar
 def listar_candidatos() -> list[dict]:
     """Devuelve la lista completa de candidatos del proceso de selección,
     con su nombre, el puesto al que optan y la fase en la que están."""
     return [minimizar(c) for c in leer_candidaturas()]
 
 @servidor.tool
+@registrar
 def buscar_candidatos(puesto: str = "", fase: str = "") -> list[dict]:
     """Busca candidatos filtrando por puesto y/o fase del proceso.
     Si no se indica ningún filtro, devuelve todos los candidatos.
@@ -67,7 +103,7 @@ def buscar_candidatos(puesto: str = "", fase: str = "") -> list[dict]:
     Fases posibles: 'En revisión', 'Entrevista programada', 'Oferta realizada',
     'Contratado', 'Rechazado'."""
     resultado = []
-    for candidato in listar_candidatos():
+    for candidato in [minimizar(c) for c in leer_candidaturas()]:
         if puesto and puesto.lower() not in candidato["puesto"].lower():
             continue
         if fase and fase.lower() not in candidato["fase"].lower():
@@ -76,6 +112,7 @@ def buscar_candidatos(puesto: str = "", fase: str = "") -> list[dict]:
     return resultado
 
 @servidor.tool
+@registrar
 def cambiar_fase(nombre: str, nueva_fase: str, confirmar: bool = False) -> dict:
     """Cambia la fase del proceso de selección de un candidato en Zoho Recruit.
     Fases posibles: 'En revisión', 'Entrevista programada', 'Oferta realizada',
