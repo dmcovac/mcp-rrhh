@@ -17,6 +17,8 @@ from dotenv import dotenv_values
 CARPETA = Path(__file__).parent
 URL_TOKEN = "https://accounts.zoho.eu/oauth/v2/token"
 URL_API = "https://recruit.zoho.eu/recruit/v2"
+# Los datos de candidatos viven fuera de la carpeta del servidor, para que la IA no los lea.
+ARCHIVO_CSV = Path.home() / "developer" / "mcp-rrhh-datos" / "candidatos_zoho.csv"
 
 # Nuestra fase -> valor interno de Zoho (en pantalla sale traducido).
 FASE_A_ZOHO = {
@@ -47,7 +49,7 @@ def preparar_plan(zoho: httpx.Client) -> list[dict]:
     id_por_vacante = {v["Posting_Title"].lower(): v["id"] for v in vacantes}
     puestos_por_vacante = {v["Posting_Title"].lower(): int(v.get("Number_of_Positions") or 1) for v in vacantes}
 
-    with open(CARPETA / "candidatos_zoho.csv", encoding="utf-8-sig") as f:
+    with open(ARCHIVO_CSV, encoding="utf-8-sig") as f:
         filas = list(csv.DictReader(f))
 
     plan = []

@@ -10,7 +10,7 @@ from pathlib import Path
 
 from faker import Faker
 
-ARCHIVO = Path(__file__).parent / "candidatos.json"
+ARCHIVO = Path.home() / "developer" / "mcp-rrhh-datos" / "candidatos.json"
 
 PUESTOS = ["Data Engineer", "Consultor MDM", "Project Manager", "Analista de datos", "Arquitecto cloud"]
 FASES = ["Criba curricular", "Entrevista RRHH", "Entrevista técnica", "Oferta enviada", "Contratado", "Descartado"]
