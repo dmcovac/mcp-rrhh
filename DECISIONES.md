@@ -4,20 +4,16 @@ Cada decisión importante del proyecto: qué se decidió, por qué y qué altern
 
 ---
 
-## 1. No usar la cuenta de Zoho de 2017
+## 1. Solo datos inventados, nunca datos de candidatos reales
 
-**Contexto.** Había una cuenta de Zoho Recruit de 2017, de cuando trabajaba como reclutadora, con datos de candidatos reales y desactualizados.
-
-**Decisión.** Crear una cuenta nueva solo para pruebas, con 50 candidatos inventados con Faker.
+**Decisión.** Trabajar con una cuenta de Zoho Recruit solo para pruebas, con 50 candidatos inventados con Faker.
 
 **Por qué.**
-- Conectar el servidor habría hecho pasar datos personales reales por la IA, justo lo contrario de la minimización.
-- Esas personas dieron sus datos para un proceso de selección concreto, no para un proyecto de aprendizaje. Usarlos para otra cosa choca con el RGPD.
+- No se pueden usar datos de candidatos reales: esas personas dieron sus datos para un proceso de selección concreto, no para un proyecto de aprendizaje. Usarlos para otra cosa choca con el RGPD (limitación de la finalidad).
+- Conectar el servidor a datos reales habría hecho pasar datos personales por la IA, justo lo contrario de la minimización.
 - Con datos falsos se puede probar sin miedo, incluso cambiar fases o hacer cargas que salgan mal.
 
-**Alternativa descartada.** Usar la cuenta antigua "solo para leer". Seguía exponiendo datos reales a la IA.
-
-**Pendiente.** Revisar si esos datos deben conservarse y, si no, borrarlos desde Zoho.
+**Alternativa descartada.** Usar datos reales "solo para leer". Seguía exponiéndolos a la IA.
 
 ---
 
