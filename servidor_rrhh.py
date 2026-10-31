@@ -1,6 +1,7 @@
 import csv
 import functools
 import json
+import threading
 import time
 from datetime import datetime
 from pathlib import Path
@@ -30,6 +31,12 @@ FASES = {
 # Contiene nombres de candidatos, así que vive fuera de la carpeta del proyecto
 # (y por tanto fuera de git), junto a los demás datos.
 REGISTRO = Path.home() / "developer" / "mcp-rrhh-datos" / "registro_mcp.csv"
+
+# Tabla que relaciona cada candidato con su código (C-0001...). Se guarda junto
+# al registro, fuera de git, para que el código no cambie al reiniciar el
+# servidor. Nunca se devuelve a la IA.
+CODIGOS = REGISTRO.parent / "codigos_candidatos.json"
+_cerrojo_codigos = threading.Lock()
 
 _token = {"valor": None, "caduca": 0.0}
 
@@ -62,6 +69,27 @@ def minimizar(candidatura: dict) -> dict:
     }
 
 
+def seudonimizar(candidaturas: list[dict]) -> list[dict]:
+    # Como minimizar, pero con un código estable en lugar del nombre. La clave
+    # es el ID de candidato de Zoho: no cambia si se corrige el nombre y no
+    # mezcla a dos personas que se llamen igual.
+    with _cerrojo_codigos:
+        tabla = json.loads(CODIGOS.read_text(encoding="utf-8")) if CODIGOS.exists() else {}
+        antes = len(tabla)
+        resultado = []
+        for candidatura in candidaturas:
+            id_candidato = str(candidatura["$Candidate_Id"])
+            if id_candidato not in tabla:
+                tabla[id_candidato] = {"codigo": f"C-{len(tabla) + 1:04d}", "nombre": candidatura["Full_Name"]}
+            datos = minimizar(candidatura)
+            del datos["nombre"]
+            resultado.append({"codigo": tabla[id_candidato]["codigo"], **datos})
+        if len(tabla) != antes:
+            CODIGOS.parent.mkdir(parents=True, exist_ok=True)
+            CODIGOS.write_text(json.dumps(tabla, ensure_ascii=False, indent=2), encoding="utf-8")
+    return resultado
+
+
 def registrar(herramienta):
     @functools.wraps(herramienta)
     def con_registro(*args, **kwargs):
@@ -91,8 +119,8 @@ def registrar(herramienta):
 @registrar
 def listar_candidatos() -> list[dict]:
     """Devuelve la lista completa de candidatos del proceso de selección,
-    con su nombre, el puesto al que optan y la fase en la que están."""
-    return [minimizar(c) for c in leer_candidaturas()]
+    con su código (C-0001...), el puesto al que optan y la fase en la que están."""
+    return seudonimizar(leer_candidaturas())
 
 @servidor.tool
 @registrar
@@ -103,7 +131,7 @@ def buscar_candidatos(puesto: str = "", fase: str = "") -> list[dict]:
     Fases posibles: 'En revisión', 'Entrevista programada', 'Oferta realizada',
     'Contratado', 'Rechazado'."""
     resultado = []
-    for candidato in [minimizar(c) for c in leer_candidaturas()]:
+    for candidato in seudonimizar(leer_candidaturas()):
         if puesto and puesto.lower() not in candidato["puesto"].lower():
             continue
         if fase and fase.lower() not in candidato["fase"].lower():
@@ -113,8 +141,10 @@ def buscar_candidatos(puesto: str = "", fase: str = "") -> list[dict]:
 
 @servidor.tool
 @registrar
-def cambiar_fase(nombre: str, nueva_fase: str, confirmar: bool = False) -> dict:
+def cambiar_fase(codigo: str, nueva_fase: str, confirmar: bool = False) -> dict:
     """Cambia la fase del proceso de selección de un candidato en Zoho Recruit.
+    El candidato se indica por su código (C-0001...), tal como lo devuelven
+    listar_candidatos y buscar_candidatos.
     Fases posibles: 'En revisión', 'Entrevista programada', 'Oferta realizada',
     'Contratado', 'Rechazado'.
     IMPORTANTE: esta operación modifica datos. Llama primero sin confirmar
@@ -125,16 +155,23 @@ def cambiar_fase(nombre: str, nueva_fase: str, confirmar: bool = False) -> dict:
         return {"estado": "error", "mensaje": f"'{nueva_fase}' no es una fase válida. Usa una de: {list(FASES)}."}
 
     candidaturas = leer_candidaturas()
-    encontrados = [c for c in candidaturas if nombre.lower() in c["Full_Name"].lower()]
+    # La IA solo conoce códigos. Se traducen a candidato aquí dentro, con la
+    # tabla que nunca sale del servidor.
+    seudonimizar(candidaturas)
+    tabla = json.loads(CODIGOS.read_text(encoding="utf-8")) if CODIGOS.exists() else {}
+    codigo = codigo.strip().upper()
+    id_candidato = next((i for i, d in tabla.items() if d["codigo"] == codigo), None)
+    encontrados = [c for c in candidaturas if str(c["$Candidate_Id"]) == id_candidato]
 
     if len(encontrados) == 0:
-        return {"estado": "error", "mensaje": f"No encuentro a nadie llamado '{nombre}'."}
+        return {"estado": "error", "mensaje": f"No existe ningún candidato con el código '{codigo}'."}
     if len(encontrados) > 1:
-        nombres = [f"{c['Full_Name']} ({c['Posting_Title']})" for c in encontrados]
-        return {"estado": "error", "mensaje": f"'{nombre}' coincide con varias candidaturas: {nombres}. Concreta más."}
+        puestos = [c["Posting_Title"] for c in encontrados]
+        return {"estado": "error", "mensaje": f"{codigo} tiene varias candidaturas ({puestos}). Este caso no está soportado todavía."}
 
     candidatura = encontrados[0]
     actual = minimizar(candidatura)
+    actual["nombre"] = codigo  # en los mensajes a la IA, siempre el código
 
     if not confirmar:
         aviso = ""
