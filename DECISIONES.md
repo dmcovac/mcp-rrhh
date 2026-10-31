@@ -33,6 +33,8 @@ Cada decisión importante del proyecto: qué se decidió, por qué y qué altern
 
 **Alternativa descartada.** Devolver el registro completo de Zoho y confiar en que la IA no use lo que no necesita.
 
+**Actualización.** Desde la decisión 11, el nombre tampoco sale: se sustituye por un código.
+
 ---
 
 ## 3. Llaves propias y mínimas para el servidor
@@ -126,6 +128,62 @@ Cada decisión importante del proyecto: qué se decidió, por qué y qué altern
 **Por qué.** Es como se encontraría en cualquier empresa real, y evita mantener dos listas. Los valores se tomaron de la API (que usa nombres internos en inglés, como `Interview-Scheduled`), no de las pantallas, porque la traducción de Zoho al español tiene errores (por ejemplo, dos etapas que aparecen como "Contratado").
 
 **Consecuencia.** *Entrevista RRHH* y *Entrevista técnica* acabaron en el mismo estado, *Entrevista programada*.
+
+---
+
+## 11. Seudonimizar: la IA solo ve códigos
+
+**Decisión.** `listar_candidatos` y `buscar_candidatos` devuelven un código estable por candidato (C-0001…) en lugar del nombre. `cambiar_fase` recibe el código, no el nombre.
+
+**Por qué.**
+- El nombre no hace falta para responder sobre el proceso. Con el código, la IA puede trabajar igual.
+- Si `cambiar_fase` aceptara nombres, la IA los escribiría en sus peticiones y viajarían al modelo igualmente.
+
+**Cómo se hizo.** La clave de la tabla es el ID de candidato de Zoho: no cambia si se corrige el nombre y no mezcla a dos personas que se llamen igual. La tabla (`codigos_candidatos.json`) vive con los demás datos, fuera del proyecto y de git, y nunca se devuelve a la IA.
+
+**Alternativa descartada.** Un hash del nombre. Se puede revertir probando nombres comunes (lo explica la guía de la AEPD sobre el hash).
+
+---
+
+## 12. Reidentificar solo fuera de la IA
+
+**Contexto.** Al probar el agente, apareció el problema contrario: la IA cambió la fase de C-0042, pero yo no tenía forma de saber quién era C-0042 en Zoho.
+
+**Decisión.** `quien_es.py` traduce un código a nombre. Se usa en la Terminal y **no** es una herramienta del servidor, así que la IA no puede usarla.
+
+**Por qué.** La seudonimización tiene dos direcciones: la IA no debe poder volver al nombre; la persona responsable sí. El RGPD lo prevé: la información que permite reidentificar se guarda aparte y solo la usan quienes están autorizados.
+
+---
+
+## 13. Un agente propio con un hook que pregunta a una persona
+
+**Decisión.** `agente.py` habla con Claude por la API y usa el servidor como única vía de acceso a los datos. Antes de ejecutar cualquier `cambiar_fase` con `confirmar=True`, un hook para y pregunta en la Terminal "¿Confirmas el cambio? (s/n)".
+
+**Por qué.** La decisión 5 dejó la regla en el servidor, pero el valor de `confirmar` lo rellena la IA. Si se equivoca o la manipulan, se confirma sola. El hook vive en el código del agente, fuera del alcance del modelo.
+
+**Error que enseñó algo.** La primera versión solo aceptaba "s". Respondí "si" y lo trató como un no. Fue un fallo seguro (no cambió nada), pero inútil. Ahora acepta "s", "si" y "sí"; cualquier otra cosa sigue siendo un no.
+
+**Lo que se vio en la prueba real.** Tras el rechazo, escribí "si, adelante" como mensaje normal. El agente no reintentó el cambio por su cuenta: pidió una autorización explícita. Con el hook corregido, el cambio llegó a Zoho (pestaña *Timeline*, 19:25 del 31 de octubre) y después se devolvió a su fase.
+
+**Modelo.** Claude Haiku 5.5. La privacidad no depende del modelo, así que se elige por coste: una consulta costó unos 0,0004 dólares.
+
+---
+
+## 14. Registrar cada decisión humana
+
+**Decisión.** Cada "sí" o "no" en el hook queda en `registro_decisiones.csv`, fuera de git.
+
+**Por qué.** La nota de la AEPD sobre sistemas algorítmicos en el ámbito laboral (7 de octubre de 2026) pide que la supervisión humana sea real y que quede constancia de los desacuerdos. Una persona que nunca dice que no puede estar aprobando sin mirar.
+
+---
+
+## 15. Pruebas deterministas en lugar de un LLM como juez
+
+**Decisión.** 26 pruebas en `tests/` comprueban la privacidad con tres candidaturas falsas fijas, sin Zoho ni la API de Claude.
+
+**Por qué.** Dan siempre el mismo resultado, no cuestan nada y no envían datos a nadie. Un LLM como juez sería más caro, variable y enviaría datos a un tercero. Si una prueba intentara escribir en Zoho, falla a propósito.
+
+**Error que enseñó algo.** La primera ejecución dio 24 de 25: el fallo era de la propia prueba (una variable con el mismo nombre que una función), no del servidor. Las pruebas también hay que probarlas.
 
 ---
 

@@ -40,6 +40,10 @@ ESCRITURAS = {"cambiar_fase"}
 # Gasto del agente: fuera del proyecto y de git, junto al registro del servidor.
 REGISTRO_AGENTE = Path.home() / "developer" / "mcp-rrhh-datos" / "registro_agente.csv"
 
+# Cada decisión de la persona en el hook (sí o no). La AEPD pide que la
+# supervisión humana sea real y que quede constancia de los desacuerdos.
+REGISTRO_DECISIONES = REGISTRO_AGENTE.parent / "registro_decisiones.csv"
+
 MAX_VUELTAS = 10
 
 INSTRUCCIONES = """Eres un asistente de RRHH que ayuda a gestionar un proceso de selección.
@@ -56,7 +60,7 @@ def hook_antes_de_herramienta(nombre: str, argumentos: dict) -> str | None:
     """Se ejecuta antes de cada herramienta, fuera del alcance del modelo.
 
     Devuelve None si la herramienta puede ejecutarse, o un mensaje si se bloquea.
-    Una escritura con confirmar=True solo pasa si una persona escribe 's'.
+    Una escritura con confirmar=True solo pasa si una persona responde s, si o sí.
     """
     if nombre not in ESCRITURAS or not argumentos.get("confirmar"):
         return None
@@ -64,11 +68,25 @@ def hook_antes_de_herramienta(nombre: str, argumentos: dict) -> str | None:
     respuesta = input("¿Confirmas el cambio? (s/n): ").strip().lower()
     # Solo un sí claro deja pasar el cambio. Cualquier otra cosa cuenta como no:
     # ante la duda, no se toca nada.
-    if respuesta in {"s", "si", "sí"}:
+    aprobado = respuesta in {"s", "si", "sí"}
+    apuntar_decision(nombre, argumentos, respuesta, aprobado)
+    if aprobado:
         return None
     print("   Cambio cancelado: no se ha modificado nada.")
     return ("La persona responsable ha respondido que NO al cambio. No se ha modificado nada. "
             "No lo intentes de nuevo salvo que ella lo pida.")
+
+
+def apuntar_decision(nombre: str, argumentos: dict, respuesta: str, aprobado: bool) -> None:
+    nuevo = not REGISTRO_DECISIONES.exists()
+    REGISTRO_DECISIONES.parent.mkdir(parents=True, exist_ok=True)
+    with open(REGISTRO_DECISIONES, "a", newline="", encoding="utf-8") as f:
+        escritor = csv.writer(f)
+        if nuevo:
+            escritor.writerow(["fecha", "herramienta", "argumentos", "respuesta", "decision"])
+        escritor.writerow([datetime.now().isoformat(timespec="seconds"), nombre,
+                           json.dumps(argumentos, ensure_ascii=False), respuesta,
+                           "aprobado" if aprobado else "rechazado"])
 
 
 def apuntar_gasto(entrada: int, salida: int, herramientas: int) -> float:

@@ -21,16 +21,19 @@ import servidor_rrhh
 CANDIDATURAS = [
     {"$Candidate_Id": "111", "$Job_Opening_Id": "J1", "Full_Name": "Ana Prueba Uno",
      "Posting_Title": "Data Engineer", "Application_Status": "Entrevista programada",
-     "Email": "ana.prueba@example.com", "Mobile": "+34 600 111 111", "Expected_Salary": 41234},
+     "Email": "ana.prueba@example.com", "Mobile": "+34 600 111 111", "Expected_Salary": 41234,
+     "Street": "Calle Inventada 12", "Additional_Info": "Llamar por la tarde al 600111111"},
     {"$Candidate_Id": "222", "$Job_Opening_Id": "J1", "Full_Name": "Bruno Prueba Dos",
      "Posting_Title": "Data Engineer", "Application_Status": "Rechazado",
-     "Email": "bruno.prueba@example.com", "Mobile": "+34 600 222 222", "Expected_Salary": 38999},
+     "Email": "bruno.prueba@example.com", "Mobile": "+34 600 222 222", "Expected_Salary": 38999,
+     "Street": "Avenida Ficticia 34", "Additional_Info": "Prefiere trabajo en remoto"},
     {"$Candidate_Id": "333", "$Job_Opening_Id": "J2", "Full_Name": "Carla Prueba Tres",
      "Posting_Title": "Consultor MDM", "Application_Status": "En revisión",
-     "Email": "carla.prueba@example.com", "Mobile": "+34 600 333 333", "Expected_Salary": 52500},
+     "Email": "carla.prueba@example.com", "Mobile": "+34 600 333 333", "Expected_Salary": 52500,
+     "Street": "Plaza Imaginaria 5", "Additional_Info": "Recomendada por un empleado"},
 ]
 SENSIBLES = [v for c in CANDIDATURAS for k, v in c.items()
-             if k in {"Full_Name", "Email", "Mobile", "Expected_Salary"}]
+             if k in {"Full_Name", "Email", "Mobile", "Expected_Salary", "Street", "Additional_Info"}]
 SENSIBLES += [p for c in CANDIDATURAS for p in c["Full_Name"].split()]  # nombre o apellido sueltos
 
 
@@ -44,6 +47,7 @@ def entorno_falso(tmp_path, monkeypatch):
     def zoho_prohibido():
         raise AssertionError("La prueba ha intentado escribir en Zoho")
     monkeypatch.setattr(servidor_rrhh, "zoho", zoho_prohibido)
+    monkeypatch.setattr(agente, "REGISTRO_DECISIONES", tmp_path / "decisiones.csv")
     return tmp_path
 
 
@@ -157,6 +161,16 @@ def test_hook_no_molesta_en_lecturas_ni_en_vistas_previas(monkeypatch, nombre, a
         raise AssertionError("El hook ha preguntado sin motivo")
     monkeypatch.setattr("builtins.input", no_preguntes)
     assert agente.hook_antes_de_herramienta(nombre, argumentos) is None
+
+
+def test_hook_registra_cada_decision_humana(monkeypatch, entorno_falso):
+    escritura = {"codigo": "C-0001", "nueva_fase": "Rechazado", "confirmar": True}
+    for respuesta in ["n", "si"]:
+        monkeypatch.setattr("builtins.input", lambda _, r=respuesta: r)
+        agente.hook_antes_de_herramienta("cambiar_fase", escritura)
+    with open(entorno_falso / "decisiones.csv", encoding="utf-8") as f:
+        filas = list(csv.DictReader(f))
+    assert [f["decision"] for f in filas] == ["rechazado", "aprobado"]
 
 
 # 5. Traza: cada consulta queda registrada -------------------------------------
